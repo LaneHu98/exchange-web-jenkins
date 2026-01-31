@@ -9,7 +9,7 @@
           "restartScript": "restart-exchange-web-service"
         },
         {
-          "host": "35.78.112.15",
+          "host": "35.78.112.158",
           "port": 22,
           "deployPath": "/home/ec2-user/to_deploy",
           "restartScript": "restart-exchange-web-service"

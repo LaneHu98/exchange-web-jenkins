@@ -180,7 +180,7 @@ def deployToServer(serviceName, serverConfig) {
                 ec2-user@${host}:${deployPath}/tmp/
 
             # 执行远程部署脚本
-            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} << ENDSSH
+            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} << 'ENDSSH'
                 cd /home/ec2-user/nokex-app
                 
                 # 终止已有的服务进程

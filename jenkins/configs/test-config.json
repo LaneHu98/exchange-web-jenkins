@@ -6,13 +6,13 @@
           "host": "54.168.238.73",
           "port": 22,
           "deployPath": "/home/ec2-user/to_deploy",
-          "restartScript": "restart-exchange-web-service"
+          "restartScript": "restart-nokex-exchange-web-service"
         },
         {
           "host": "35.78.112.158",
           "port": 22,
           "deployPath": "/home/ec2-user/to_deploy",
-          "restartScript": "restart-exchange-web-service"
+          "restartScript": "restart-nokex-exchange-web-service"
         }
       ]
     }

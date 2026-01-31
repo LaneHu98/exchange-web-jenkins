@@ -94,10 +94,8 @@ pipeline {
                     servicesToDeploy.each { serviceName ->
                         stage("构建 ${serviceName}") {
                             // 根据服务名获取对应目录
-                            def serviceDir = serviceDirectoryMapping[serviceName] ?: serviceName
-
-                            echo "开始构建服务: ${serviceName}，对应目录: ${serviceDir}"
-                            dir("${serviceDir}/${serviceName}") {
+                            echo "开始构建服务: ${serviceName}}"
+                            dir("${serviceName}") {
                                 if (params.SKIP_TESTS) {
                                     sh "mvn clean package -DskipTests"
                                 } else {

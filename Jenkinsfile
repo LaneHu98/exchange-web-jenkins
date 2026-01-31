@@ -184,11 +184,11 @@ def deployToServer(serviceName, serverConfig) {
                 cd /home/ec2-user/nokex-app
                 
                 # 终止已有的服务进程
-                EXISTING_PIDS=\$(ps -ef | grep "${serviceName}" | grep -v grep | awk '{print \$2}')
+                EXISTING_PIDS=\$(ps -ef | grep "${serviceName}" | grep -v grep | awk '{print \$2}' | xargs)
                 if [ -n "\$EXISTING_PIDS" ]; then
                     echo "发现已存在的进程，PID: \$EXISTING_PIDS"
                     echo "正在终止旧进程..."
-                    kill -9 \$EXISTING_PIDS 2>/dev/null
+                    sudo kill -9 \$EXISTING_PIDS 2>/dev/null
                     sleep 5  # 等待进程完全终止
                     echo "旧进程已终止"
                 else
@@ -203,13 +203,15 @@ def deployToServer(serviceName, serverConfig) {
                 sleep 30
 
                 # 查找并终止tail -f进程
-                TAIL_PID=\$(ps -ef | grep "tail -f" | grep -v grep | awk '{print \$2}')
-                if [ -n "\$TAIL_PID" ]; then
-                    # 检查该进程是否是我们的部署脚本的子进程
-                    PARENT_PID=\$(ps -o ppid= -p "\$TAIL_PID" | tr -d ' ')
-                    if [ "\$PARENT_PID" = "\$DEPLOY_PID" ]; then
-                        kill "\$TAIL_PID" 2>/dev/null && echo "已终止tail -f进程: \$TAIL_PID"
-                    fi
+                TAIL_PIDS=\$(ps -ef | grep "tail -f" | grep -v grep | awk '{print \$2}' | xargs)
+                if [ -n "\$TAIL_PIDS" ]; then
+                    for pid in \$TAIL_PIDS; do
+                        # 检查该进程是否是我们的部署脚本的子进程
+                        PARENT_PID=\$(ps -o ppid= -p \$pid | xargs)
+                        if [ "\$PARENT_PID" = "\$DEPLOY_PID" ]; then
+                           sudo kill "\$pid" 2>/dev/null && echo "已终止tail -f进程: \$pid"
+                        fi
+                    done
                 fi
 
                 echo "部署完成，应用已启动。"

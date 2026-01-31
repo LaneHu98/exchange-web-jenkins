@@ -185,9 +185,16 @@ def deployToServer(serviceName, serverConfig) {
 
                 # 执行部署脚本并记录PID
                 echo "开始执行部署脚本..."
-                sudo ./\${rs}.sh tmp > "/tmp/deploy_\${serviceName}.log" 2>&1 &
-                DEPLOY_PID=\$!
-                echo "部署脚本PID: \$DEPLOY_PID"
+                if [ -f "./\${rs}.sh" ]; then
+                    sudo ./\${rs}.sh tmp > "/tmp/deploy_\${serviceName}.log" 2>&1 &
+                    DEPLOY_PID=\$!
+                    echo "部署脚本PID: \$DEPLOY_PID"
+                else
+                    echo "错误: 部署脚本 ./\${rs}.sh 不存在"
+                    echo "当前目录文件:"
+                    ls -la
+                    exit 1
+                fi
                 
                 # 等待应用启动
                 echo "等待应用启动..."
@@ -202,14 +209,22 @@ def deployToServer(serviceName, serverConfig) {
                         echo "Java应用已启动，PID: \$JAVA_PIDS"
                     else
                         echo "警告: Java应用可能未成功启动"
+                        # 显示部署日志的最后几行用于调试
+                        if [ -f "/tmp/deploy_\${serviceName}.log" ]; then
+                            echo "=== 部署日志最后20行 ==="
+                            tail -20 /tmp/deploy_\${serviceName}.log
+                            echo "========================"
+                        fi
                     fi
                 else
                     echo "部署脚本已结束"
                     # 检查部署日志
                     if [ -f "/tmp/deploy_\${serviceName}.log" ]; then
-                        echo "=== 部署日志最后10行 ==="
-                        tail -10 /tmp/deploy_\${serviceName}.log
+                        echo "=== 部署日志最后20行 ==="
+                        tail -20 /tmp/deploy_\${serviceName}.log
                         echo "========================"
+                    else
+                        echo "错误: 部署日志文件不存在"
                     fi
                 fi
                 

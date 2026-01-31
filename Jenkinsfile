@@ -20,7 +20,7 @@ pipeline {
         stage('初始化') {
             steps {
                 script {
-                    echo "开始部署 ${SERVICE_NAME} 到 test 环境"
+                    echo "开始部署 limbo-exchange-web-service 到 test 环境"
                     echo "构建版本: ${BUILD_VERSION}"
                     echo "Git分支: ${BRANCH}"
 
@@ -34,21 +34,10 @@ pipeline {
                     def servicesConfig = readJSON file: 'jenkins/configs/services.json'
                     def allServices = servicesConfig.collect { it.toString() }
                     
-                    // 正确处理 ALL 参数或者单个服务参数，避免使用被拒绝的toJson方法
-                    if (params.SERVICE_NAME == 'ALL') {
-                        // 直接在环境中存储所有服务的字符串表示
-                        env.ALL_SERVICES = "true"
-                        env.SINGLE_SERVICE = ""
-                    } else {
-                        // 存储单个服务
-                        env.ALL_SERVICES = "false"
-                        env.SINGLE_SERVICE = params.SERVICE_NAME
-                    }
-                    
-                    // 调试信息
-                    echo "所有服务: ${allServices}"
-                    echo "部署全部服务: ${env.ALL_SERVICES}"
-                    echo "单个服务: ${env.SINGLE_SERVICE}"
+
+                    // 存储单个服务
+                    env.ALL_SERVICES = "false"
+                    env.SINGLE_SERVICE = "limbo-exchange-web-service"
                 }
             }
         }

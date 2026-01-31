@@ -180,29 +180,40 @@ def deployToServer(serviceName, serverConfig) {
                 ec2-user@${host}:${deployPath}/tmp/
 
             # 执行远程部署脚本
-            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} << 'ENDSSH'
+            ssh -p ${port} -o StrictHostKeyChecking=no ec2-user@${host} << ENDSSH
                 cd /home/ec2-user/nokex-app
 
                 # 执行部署脚本并记录PID
-                sudo ./"${rs}".sh tmp > "/tmp/deploy_${serviceName}.log" 2>&1 &
+                echo "开始执行部署脚本..."
+                sudo ./\${rs}.sh tmp > "/tmp/deploy_\${serviceName}.log" 2>&1 &
                 DEPLOY_PID=\$!
-
-                # 等待30秒让Java应用启动
+                echo "部署脚本PID: \$DEPLOY_PID"
+                
+                # 等待应用启动
+                echo "等待应用启动..."
                 sleep 30
-
-                # 查找并终止tail -f进程
-                TAIL_PIDS=\$(ps -ef | grep "tail -f" | grep -v grep | awk '{print \$2}' | xargs)
-                if [ -n "\$TAIL_PIDS" ]; then
-                    for pid in \$TAIL_PIDS; do
-                        # 检查该进程是否是我们的部署脚本的子进程
-                        PARENT_PID=\$(ps -o ppid= -p \$pid | xargs)
-                        if [ "\$PARENT_PID" = "\$DEPLOY_PID" ]; then
-                           sudo kill "\$pid" 2>/dev/null && echo "已终止tail -f进程: \$pid"
-                        fi
-                    done
+                
+                # 检查应用是否成功启动
+                if ps -p \$DEPLOY_PID > /dev/null; then
+                    echo "部署脚本仍在运行"
+                    # 检查Java进程是否启动
+                    JAVA_PIDS=\$(ps -ef | grep "java" | grep "\${serviceName}" | grep -v grep | awk '{print \$2}')
+                    if [ -n "\$JAVA_PIDS" ]; then
+                        echo "Java应用已启动，PID: \$JAVA_PIDS"
+                    else
+                        echo "警告: Java应用可能未成功启动"
+                    fi
+                else
+                    echo "部署脚本已结束"
+                    # 检查部署日志
+                    if [ -f "/tmp/deploy_\${serviceName}.log" ]; then
+                        echo "=== 部署日志最后10行 ==="
+                        tail -10 /tmp/deploy_\${serviceName}.log
+                        echo "========================"
+                    fi
                 fi
-
-                echo "部署完成，应用已启动。"
+                
+                echo "部署流程完成"
 
 ENDSSH
         """

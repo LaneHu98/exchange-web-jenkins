@@ -184,11 +184,11 @@ def deployToServer(serviceName, serverConfig) {
                 cd /home/ec2-user/nokex-app
                 
                 # 终止已有的服务进程
-                EXISTING_PIDS=$(ps -ef | grep "${serviceName}" | grep -v grep | awk '{print $2}')
-                if [ -n "$EXISTING_PIDS" ]; then
-                    echo "发现已存在的进程，PID: $EXISTING_PIDS"
+                EXISTING_PIDS=\$(ps -ef | grep "${serviceName}" | grep -v grep | awk '{print \$2}')
+                if [ -n "\$EXISTING_PIDS" ]; then
+                    echo "发现已存在的进程，PID: \$EXISTING_PIDS"
                     echo "正在终止旧进程..."
-                    kill -9 $EXISTING_PIDS 2>/dev/null
+                    kill -9 \$EXISTING_PIDS 2>/dev/null
                     sleep 5  # 等待进程完全终止
                     echo "旧进程已终止"
                 else

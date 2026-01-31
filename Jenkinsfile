@@ -9,7 +9,7 @@ pipeline {
     environment {
         // 构建信息
         BUILD_VERSION = "${BUILD_ID}-${env.BUILD_TIMESTAMP}"
-        REPO_URL = 'git@github.com:backend-ex/spot-main.git'
+        REPO_URL = 'git@github.com:backend-ex/spot_exchange_web.git'
 
         // 根据不同环境设置变量
         // 不再将 JSON 对象存储在环境变量中

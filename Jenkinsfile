@@ -162,7 +162,7 @@ def deployToServer(serviceName, serverConfig) {
     def deployPath = serverConfig.deployPath ?: "/opt/apps/${serviceName}"
     def rs = serverConfig.restartScript
 
-    echo "部署 ${serviceName} 到服务器 ${host}"
+    echo "部署 ${serviceName} 到服务器 ${host}，使用脚本: ${rs}"
 
     // 使用SSH连接服务器执行部署
     sshagent(['deploy-server-key']) {
@@ -185,14 +185,16 @@ def deployToServer(serviceName, serverConfig) {
 
                 # 执行部署脚本并记录PID
                 echo "开始执行部署脚本..."
-                if [ -f "./\${rs}.sh" ]; then
-                    sudo ./\${rs}.sh tmp > "/tmp/deploy_\${serviceName}.log" 2>&1 &
+                if [ -f "./${rs}.sh" ]; then
+                    sudo ./${rs}.sh tmp > "/tmp/deploy_${serviceName}.log" 2>&1 &
                     DEPLOY_PID=\$!
                     echo "部署脚本PID: \$DEPLOY_PID"
                 else
-                    echo "错误: 部署脚本 ./\${rs}.sh 不存在"
+                    echo "错误: 部署脚本 ./${rs}.sh 不存在"
                     echo "当前目录文件:"
                     ls -la
+                    echo "检查脚本是否存在:"
+                    ls -la ${rs}.sh 2>/dev/null || echo "脚本文件不存在"
                     exit 1
                 fi
                 
@@ -204,24 +206,24 @@ def deployToServer(serviceName, serverConfig) {
                 if ps -p \$DEPLOY_PID > /dev/null; then
                     echo "部署脚本仍在运行"
                     # 检查Java进程是否启动
-                    JAVA_PIDS=\$(ps -ef | grep "java" | grep "\${serviceName}" | grep -v grep | awk '{print \$2}')
+                    JAVA_PIDS=\$(ps -ef | grep "java" | grep "${serviceName}" | grep -v grep | awk '{print \$2}')
                     if [ -n "\$JAVA_PIDS" ]; then
                         echo "Java应用已启动，PID: \$JAVA_PIDS"
                     else
                         echo "警告: Java应用可能未成功启动"
                         # 显示部署日志的最后几行用于调试
-                        if [ -f "/tmp/deploy_\${serviceName}.log" ]; then
+                        if [ -f "/tmp/deploy_${serviceName}.log" ]; then
                             echo "=== 部署日志最后20行 ==="
-                            tail -20 /tmp/deploy_\${serviceName}.log
+                            tail -20 /tmp/deploy_${serviceName}.log
                             echo "========================"
                         fi
                     fi
                 else
                     echo "部署脚本已结束"
                     # 检查部署日志
-                    if [ -f "/tmp/deploy_\${serviceName}.log" ]; then
+                    if [ -f "/tmp/deploy_${serviceName}.log" ]; then
                         echo "=== 部署日志最后20行 ==="
-                        tail -20 /tmp/deploy_\${serviceName}.log
+                        tail -20 /tmp/deploy_${serviceName}.log
                         echo "========================"
                     else
                         echo "错误: 部署日志文件不存在"
